@@ -1,0 +1,46 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default-deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn()
+        && request.auth.token.email == "officialraghav674@gmail.com"
+        && request.auth.token.email_verified == true;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isValidProgress(data) {
+      return data.keys().hasAll(['completed', 'updatedAt', 'updatedBy'])
+        && data.keys().size() == 3
+        && data.completed is map
+        && data.updatedAt is timestamp
+        && data.updatedBy is string;
+    }
+
+    // Progress Collection rules
+    match /progress/{progressId} {
+      allow read: if true;
+      allow create: if isAdmin()
+        && isValidId(progressId)
+        && isValidProgress(request.resource.data)
+        && request.resource.data.updatedAt == request.time;
+      allow update: if isAdmin()
+        && isValidId(progressId)
+        && isValidProgress(request.resource.data)
+        && request.resource.data.updatedAt == request.time;
+      allow delete: if isAdmin();
+    }
+  }
+}

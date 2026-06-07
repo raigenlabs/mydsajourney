@@ -1,0 +1,31 @@
+{
+  "entities": {
+    "progress": {
+      "title": "Progress",
+      "description": "Progress tracking data for DSA problems",
+      "type": "object",
+      "properties": {
+        "completed": {
+          "type": "object",
+          "description": "Map-like object where keys are problem identifiers (e.g. '0-1-2' for week 0, day 1, problem index 2) and values are booleans"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last updated timestamp"
+        },
+        "updatedBy": {
+          "type": "string",
+          "description": "User email or UID who updated it"
+        }
+      },
+      "required": ["completed", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "progress/{progressId}": {
+      "schema": "progress",
+      "description": "Store problem progression maps"
+    }
+  }
+}
